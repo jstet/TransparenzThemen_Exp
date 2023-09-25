@@ -18,11 +18,13 @@ print(f"The required sample size is: {sample_size}")
 objects_per_page = 50
 total_pages = population_size // objects_per_page
 
+offsets = list(range(0, population_size, objects_per_page))
+
 sampled_objects = []
 sampled_ids = set()
 
 while len(sampled_objects) < sample_size:
-    random_page = random.randint(1, total_pages)
+    random_page = random.choice(offsets)
     
     url = f"{root_url}request/?offset={random_page}"
     response = requests.get(url)
@@ -32,13 +34,18 @@ while len(sampled_objects) < sample_size:
         request = random.choice(request_lst)
         
         # Check if ID is already in the sampled IDs set
-        if request["id"] not in sampled_ids:
+        if request["id"] not in sampled_ids and request["campaign"] is None:
             sampled_ids.add(request["id"])
-            sampled_objects.append({"id": request["id"], "description": request["description"]})
+            description = request["description"]
+            
+            sampled_objects.append({"id": request["id"], "description": description, "title": request["title"]})
+            # Calculate the relative progress
+            progress = len(sampled_objects) / sample_size * 100
+            print(f"Sampled {len(sampled_objects)} out of {sample_size} objects. Progress: {progress:.2f}%")
+        else:
+            print("skipped")
     
-    # Calculate the relative progress
-    progress = len(sampled_objects) / sample_size * 100
-    print(f"Sampled {len(sampled_objects)} out of {sample_size} objects. Progress: {progress:.2f}%")
+    
 
 ### Saving sample to CSV ####
 
