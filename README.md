@@ -6,6 +6,7 @@
 
 ## Run tests
 ```
+python3 -m pytest tests.py -s
 ```
 
 ## Findings
